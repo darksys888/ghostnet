@@ -1,0 +1,22 @@
+{
+  "name": "@ghostnet/coming-soon",
+  "version": "0.1.0",
+  "private": true,
+  "description": "GHOSTNET — `coming soon` landing with a 64-day countdown.",
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}

@@ -14,6 +14,9 @@ and exclusion list (typos / format-only fixes don't need an entry).
 
 ### Added
 
+- `apps/coming-soon/` — Next.js 15 + React 19 launch page with a 64-day
+  countdown to **2026-07-03**. Serves on port 4000 (`/coming-soon`,
+  with `/` → 307 redirect). Tagged `scope:apps`, `type:app` in Nx.
 - `CHANGELOG.md` (this file) and `AUDIT.md` for cross-session journaling
 - Hard rule in `AGENTS.md`: every meaningful change updates both journals
 - `tests/structure/` Cypress suite validating the journal + agent-rule
@@ -21,6 +24,11 @@ and exclusion list (typos / format-only fixes don't need an entry).
 - GitHub Actions: extended `.github/workflows/ci.yml` with `e2e-cdn` and
   `e2e-structure` jobs that run on every push + PR
 - npm + Make scripts: `e2e:structure` / `make e2e-structure`
+
+### Changed
+
+- Root `.gitignore` — added `.next/` so Next build outputs stay out of
+  git history
 
 ## [0.0.1] — 2026-04-30
 

@@ -45,6 +45,8 @@ export default tseslint.config(
       'dev/retro/nitro/nitro-converter/**', // SWF→nitro converter submodule
       'dev/retro/nitro/nitro-assets/**', // default assets submodule
       'dev/retro/nitro/nitro-swf/**', // SWF pack submodule
+      '**/next-env.d.ts', // Next.js auto-generates this; "do not edit"
+      '**/.next/**', // Next build output (types/, server/, static/)
     ],
   },
 

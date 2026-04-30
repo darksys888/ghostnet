@@ -9,14 +9,18 @@ the **Resume here** block at the top tells you exactly where to start.
 
 ## 🎯 Resume here
 
-**Last touched**: 2026-04-30 · GitHub repo bootstrapped + journals added
+**Last touched**: 2026-04-30 · `apps/coming-soon` Next.js launch page
 
 **State of the world right now**:
 
 - ✅ Repo is on GitHub: <https://github.com/darksys888/ghostnet>
-- ✅ Initial commit (158 files) pushed to `main`, no Claude attribution
-- ✅ All 103 Cypress tests pass when their respective backends are up
-- ✅ Pipeline (`npm run check`) green on 5 typecheck projects
+- ✅ 7 Nx projects (added `coming-soon`)
+- ✅ All 164 Cypress tests pass when their respective backends are up
+- ✅ Pipeline (`npm run check`) green on 7 typecheck projects
+- ✅ `apps/coming-soon` Next 15 + React 19 launch page live at
+  `http://localhost:4000/coming-soon` (`/` → 307 redirect). 64-day
+  countdown targeting **2026-07-03**. Verified HTTP 200, all
+  expected text markers present.
 - ✅ Journals (`CHANGELOG.md` + this file) wired into the AGENTS.md rules
 - ✅ `tests/structure/` validates that `AGENTS.md` / `CHANGELOG.md` /
   `AUDIT.md` keep their invariants
@@ -61,6 +65,56 @@ IS the audit.
 ---
 
 ## Session log
+
+### 2026-04-30 · `apps/coming-soon` launch page
+
+**Status**: ✅ shipped
+
+**Done**:
+
+- Created `apps/coming-soon/` — first Node-workspace app under
+  `apps/*`. Next.js 15 + React 19, app router, port 4000 to avoid the
+  Retro stack's :3000 binding.
+- Routes: `/coming-soon/page.tsx` renders the page; `/page.tsx` is a
+  stub since `next.config.mjs` redirects `/` → `/coming-soon` (307).
+- Components:
+  - `coming-soon/countdown.tsx` — `'use client'`, `setInterval` ticks
+    every second, target `2026-07-03T00:00:00Z` (64 days from today),
+    `useState<TimeLeft | null>` to dodge SSR/CSR hydration mismatch.
+  - `coming-soon/page.tsx` — server component with brand + tagline +
+    `<Countdown />` + footer.
+- Styling: cyber/hacker theme matching the brand — radial gradient
+  background, gradient brand text, monospace, neon-green countdown
+  numerals. CSS-only (no Tailwind / styled-components).
+- `next.config.mjs` redirects `/` → `/coming-soon`.
+- `apps/coming-soon/project.json` — Nx targets: build / serve / start /
+  typecheck. `serve` is `continuous: true`. Build outputs `.next/`.
+- Added `src/globals.d.ts` with `declare module '*.css';` so `tsc
+--noEmit` doesn't choke on CSS side-effect imports before Next has
+  generated `.next/types/`.
+- Root `.gitignore` extended with `.next/`.
+
+**Verified live**:
+
+- `curl http://localhost:4000/coming-soon` → HTTP 200, 13868 B
+- `curl http://localhost:4000/` → HTTP 307 → `/coming-soon` → HTTP 200
+- Page contains expected text markers: `GHOSTNET`, `Coming soon`,
+  `countdown`, `July`
+- `npm run check` → all 7 projects typecheck green
+
+**Open**:
+
+- (none)
+
+**Next time**:
+
+- If we ever want a dedicated lint config for React/JSX, add
+  `eslint-plugin-react`, `eslint-plugin-react-hooks`, and
+  `@next/eslint-plugin-next` to root and a per-app override block in
+  `eslint.config.mjs`. Today the root flat config handles the TSX
+  cleanly without Next-specific rules.
+
+---
 
 ### 2026-04-30 · Journals + GitHub CI for Cypress
 
