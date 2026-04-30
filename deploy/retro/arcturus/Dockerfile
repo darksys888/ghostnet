@@ -3,7 +3,7 @@
 # baked in. No source code in the runtime image.
 
 # ── Stage 1: Maven build ─────────────────────────────────────────
-FROM maven:3.9-eclipse-temurin-17 AS builder
+FROM maven:3-eclipse-temurin-26 AS builder
 WORKDIR /build
 # Pre-fetch dependencies for layer caching — POM-only first.
 COPY dev/retro/emulator/arcturus/pom.xml ./pom.xml
