@@ -15,7 +15,7 @@ RUN mvn -B package -DskipTests \
 
 # ── Stage 2: NitroWebsockets plugin fetch ────────────────────────
 # Cloudflare in front of git.krews.org rejects the default wget UA.
-FROM alpine:3.20 AS plugin-fetcher
+FROM alpine:3.23 AS plugin-fetcher
 RUN apk add --no-cache wget ca-certificates
 WORKDIR /plugin
 RUN wget --user-agent="Mozilla/5.0 (X11; Linux x86_64)" -q \
