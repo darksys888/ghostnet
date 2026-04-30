@@ -10,7 +10,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "cypress": "^14.0.0",
+    "cypress": "^15.14.2",
     "dotenv": "^17.0.0",
     "mysql2": "^3.13.0"
   }
