@@ -1,0 +1,30 @@
+{
+  // Recommended extensions for the GHOSTNET workspace.
+  // VS Code prompts new contributors to install these the first time
+  // they open the folder. Keep the list TIGHT — every entry is mandatory
+  // for a smooth dev experience here.
+  "recommendations": [
+    // ─── Core: linting + formatting ──────────────────────────────
+    "dbaeumer.vscode-eslint", // ESLint integration (flat-config aware)
+    "esbenp.prettier-vscode", // Prettier formatter
+
+    // ─── Nx ──────────────────────────────────────────────────────
+    "nrwl.angular-console", // Nx Console — visual generator/runner
+
+    // ─── Quality of life ─────────────────────────────────────────
+    "editorconfig.editorconfig", // honour .editorconfig
+    "yoavbls.pretty-ts-errors", // human-readable TypeScript errors
+    "usernamehw.errorlens", // inline diagnostics next to the line
+    "streetsidesoftware.code-spell-checker", // catches typos in comments + strings
+    "christian-kohler.path-intellisense", // file-path autocomplete in strings
+    "gruntfuggly.todo-tree", // surface TODO / FIXME / HACK
+    "redhat.vscode-yaml" // YAML schema + autocomplete
+  ],
+
+  // Extensions to actively avoid. VS Code warns if a user tries to
+  // install one of these — useful when an extension would conflict
+  // with the workspace conventions above.
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript-next" // we pin TS via workspace tsdk; nightly diverges
+  ]
+}

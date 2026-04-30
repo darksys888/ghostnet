@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "GHOSTNET (dev)",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "ghostnet",
+      "Username": "ghostnet",
+      "SSLMode": "prefer",
+      "Comment": "Local Postgres started by .devcontainer/docker-compose.yml"
+    }
+  }
+}

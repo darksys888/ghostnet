@@ -1,0 +1,30 @@
+{
+  "name": "tests-hostnames",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/hostnames",
+  "projectType": "application",
+  "tags": ["scope:tests", "type:e2e", "target:hostnames"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/hostnames",
+        "command": "cypress run"
+      }
+    },
+    "e2e:open": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/hostnames",
+        "command": "cypress open"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/hostnames",
+        "command": "tsc --noEmit"
+      }
+    }
+  }
+}

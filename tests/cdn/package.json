@@ -1,0 +1,16 @@
+{
+  "name": "@ghostnet/tests-cdn",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cypress security + functional tests for the @ghostnet/cdn service.",
+  "scripts": {
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "cypress": "^14.0.0",
+    "dotenv": "^17.0.0"
+  }
+}

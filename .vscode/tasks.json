@@ -1,0 +1,111 @@
+{
+  // VS Code task definitions — one per npm script.
+  // Run via the Task palette (Ctrl/Cmd-Shift-P → "Tasks: Run Task")
+  // or pick the default build task with Ctrl/Cmd-Shift-B.
+  "version": "2.0.0",
+  "tasks": [
+    // ─── Setup / quality ─────────────────────────────────────────
+    {
+      "label": "setup",
+      "type": "npm",
+      "script": "setup",
+      "problemMatcher": [],
+      "detail": "Install dependencies (npm install)"
+    },
+    {
+      "label": "check",
+      "type": "npm",
+      "script": "check",
+      "problemMatcher": ["$tsc", "$eslint-stylish"],
+      "detail": "Full quality gate: format + lint + typecheck + test",
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "lint",
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": ["$eslint-stylish"],
+      "detail": "Run ESLint across the workspace"
+    },
+    {
+      "label": "lint:fix",
+      "type": "npm",
+      "script": "lint:fix",
+      "problemMatcher": ["$eslint-stylish"],
+      "detail": "Run ESLint with --fix"
+    },
+    {
+      "label": "format",
+      "type": "npm",
+      "script": "format",
+      "problemMatcher": [],
+      "detail": "Run Prettier --write across the workspace"
+    },
+    {
+      "label": "format:check",
+      "type": "npm",
+      "script": "format:check",
+      "problemMatcher": [],
+      "detail": "Run Prettier --check (CI-friendly, no writes)"
+    },
+    {
+      "label": "clean",
+      "type": "npm",
+      "script": "clean",
+      "problemMatcher": [],
+      "detail": "Reset Nx cache and remove node_modules + build output"
+    },
+
+    // ─── Build (per environment) ─────────────────────────────────
+    {
+      "label": "build",
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": ["$tsc"],
+      "detail": "Build every project (default configuration)",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "build:dev",
+      "type": "npm",
+      "script": "build:dev",
+      "problemMatcher": ["$tsc"],
+      "detail": "Build every project for DEVELOPMENT",
+      "group": "build"
+    },
+    {
+      "label": "build:prod",
+      "type": "npm",
+      "script": "build:prod",
+      "problemMatcher": ["$tsc"],
+      "detail": "Build every project for PRODUCTION",
+      "group": "build"
+    },
+
+    // ─── Start (per environment) ─────────────────────────────────
+    {
+      "label": "start",
+      "type": "npm",
+      "script": "start",
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "Serve every project (development mode)"
+    },
+    {
+      "label": "start:dev",
+      "type": "npm",
+      "script": "start:dev",
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "Serve every project for DEVELOPMENT (hot reload)"
+    },
+    {
+      "label": "start:prod",
+      "type": "npm",
+      "script": "start:prod",
+      "problemMatcher": [],
+      "isBackground": true,
+      "detail": "Serve every project for PRODUCTION preview"
+    }
+  ]
+}

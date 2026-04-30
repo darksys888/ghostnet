@@ -1,0 +1,67 @@
+{
+  // Debug configurations.
+  // Add app-specific entries here once apps are scaffolded under apps/*.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Attach the debugger to a Node process started with `--inspect`
+      // (default port 9229). Pair with `node --inspect-brk` to pause on entry.
+      "name": "Attach: Node (port 9229)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "skipFiles": ["<node_internals>/**"], // don't step into Node's own code
+      "restart": true, // reattach after restarts triggered by hot reload
+      "sourceMaps": true
+    },
+    {
+      // Run the currently focused JS/TS file in Node with the debugger
+      // attached. Requires the file to be runnable on its own (most useful
+      // for scratch scripts).
+      "name": "Launch: current file (Node)",
+      "type": "node",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true
+    },
+    {
+      // Run any npm script through the debugger. VS Code prompts you to
+      // pick the script when this configuration starts.
+      "name": "Launch: npm script (prompt)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "${input:npmScript}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+
+  // Inputs surfaced when a configuration uses ${input:<id>}.
+  "inputs": [
+    {
+      "id": "npmScript",
+      "type": "pickString",
+      "description": "Which npm script should run?",
+      "options": [
+        "check",
+        "lint",
+        "lint:fix",
+        "format",
+        "format:check",
+        "build",
+        "build:dev",
+        "build:prod",
+        "start",
+        "start:dev",
+        "start:prod",
+        "clean"
+      ],
+      "default": "check"
+    }
+  ]
+}

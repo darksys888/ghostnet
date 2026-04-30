@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "types": ["cypress", "node"],
+    "noEmit": true,
+    "noUnusedLocals": false,
+    "composite": false,
+    "isolatedModules": false
+  },
+  "include": ["cypress.config.ts", "cypress/**/*.ts", "cypress/**/*.tsx", "cypress/**/*.d.ts"]
+}

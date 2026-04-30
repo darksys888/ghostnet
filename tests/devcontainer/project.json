@@ -1,0 +1,30 @@
+{
+  "name": "tests-devcontainer",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/devcontainer",
+  "projectType": "application",
+  "tags": ["scope:tests", "type:e2e", "target:devcontainer"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/devcontainer",
+        "command": "cypress run"
+      }
+    },
+    "e2e:open": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/devcontainer",
+        "command": "cypress open"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/devcontainer",
+        "command": "tsc --noEmit"
+      }
+    }
+  }
+}

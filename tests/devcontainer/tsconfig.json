@@ -1,0 +1,23 @@
+{
+  // Inherits strict + UHQ settings from the workspace root.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // Cypress's TS handler expects a CJS-style configuration.
+    "module": "commonjs",
+    "moduleResolution": "node",
+    // TS 6 deprecates `baseUrl` (inherited from base) and `moduleResolution: "node"`.
+    // They still work; `ignoreDeprecations` keeps `tsc --noEmit` clean until TS 7.
+    "ignoreDeprecations": "6.0",
+    // Pull in Cypress + Node ambient typings.
+    "types": ["cypress", "node"],
+    // Cypress doesn't emit; tsc is used only for `tsc --noEmit` typechecking.
+    "noEmit": true,
+    // Cypress globals (cy, Cypress, expect…) make `noUnusedLocals` complain.
+    // Disable here; ESLint handles unused imports via `unused-imports`.
+    "noUnusedLocals": false,
+    // Composite settings inherited from base may interfere — opt out.
+    "composite": false,
+    "isolatedModules": false
+  },
+  "include": ["cypress.config.ts", "cypress/**/*.ts", "cypress/**/*.tsx", "cypress/**/*.d.ts"]
+}

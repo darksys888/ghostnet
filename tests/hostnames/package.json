@@ -1,0 +1,15 @@
+{
+  "name": "@ghostnet/tests-hostnames",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cypress tests for the local-dev hosts file + Caddy reverse proxy.",
+  "scripts": {
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "cypress": "^14.0.0"
+  }
+}

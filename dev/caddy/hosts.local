@@ -1,0 +1,30 @@
+# GHOSTNET local development hostnames.
+# Source-of-truth for `scripts/hosts.{sh,ps1}` — those scripts copy the
+# entries below (between the markers in your system hosts file) so every
+# *.ghostnetw.test name resolves to 127.0.0.1.
+#
+# Why .test?  RFC 6761 reserves it for testing — it will never resolve
+# via real DNS, so there's zero collision risk with anything on the open
+# internet.
+#
+# Add a new hostname:
+#   1. Append a line below.
+#   2. Add a matching `reverse_proxy` block in dev/caddy/Caddyfile.
+#   3. `npm run hosts:install` (or PowerShell variant on Windows).
+#   4. `npm run caddy:reload`.
+
+# ─── Public CDN ──────────────────────────────────────────────────
+127.0.0.1   cdn.ghostnetw.test
+
+# ─── Retro stack (Holo5 dev) ─────────────────────────────────────
+127.0.0.1   retro.ghostnetw.test
+127.0.0.1   assets.ghostnetw.test
+127.0.0.1   swf.ghostnetw.test
+127.0.0.1   arcturus.ghostnetw.test
+
+# ─── .devcontainer web GUIs ──────────────────────────────────────
+127.0.0.1   db.ghostnetw.test
+127.0.0.1   pgadmin.ghostnetw.test
+127.0.0.1   mail.ghostnetw.test
+127.0.0.1   s3-console.ghostnetw.test
+127.0.0.1   s3.ghostnetw.test

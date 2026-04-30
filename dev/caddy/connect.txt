@@ -1,0 +1,122 @@
+═══════════════════════════════════════════════════════════════════════════════
+ GHOSTNET — local hostnames + Caddy reverse proxy
+═══════════════════════════════════════════════════════════════════════════════
+
+ Pretty URLs in dev that mirror the shape of prod.
+
+ hosts.local        : source-of-truth list of dev hostnames
+ Caddyfile          : reverse proxy config that fronts every service
+ scripts/hosts.sh   : install / remove / status (Linux / macOS / WSL / Git Bash)
+ scripts/hosts.ps1  : install / remove / status (Windows, self-elevates UAC)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ First-time setup
+═══════════════════════════════════════════════════════════════════════════════
+
+ 1. Install Caddy (one-time):
+      Windows  : winget install CaddyServer.Caddy
+      macOS    : brew install caddy
+      Debian   : apt install caddy
+      (or grab a binary from https://caddyserver.com/download)
+
+ 2. Inject the hostnames into your system hosts file:
+      npm run hosts:install            (bash, sudo'd if needed)
+      .\scripts\hosts.ps1 install      (Windows, prompts UAC)
+
+ 3. Bring up the backends Caddy will proxy to:
+      npm run dev:up                   .devcontainer (DBs + GUIs + mail + S3)
+      npm run retro:up                 Holo5 Retro stack
+      npm run cdn:dev                  Public CDN
+
+ 4. Start Caddy:
+      npm run caddy:start
+
+ 5. Visit any of the friendly URLs (HTTP, no cert prompts):
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Hostname → service map
+═══════════════════════════════════════════════════════════════════════════════
+
+  http://cdn.ghostnetw.test           Public CDN  (Fastify, port 5500)
+  http://retro.ghostnetw.test         Nitro client (Holo5 dev, port 1080)
+  http://assets.ghostnetw.test        Retro asset server (port 8080)
+  http://swf.ghostnetw.test           Retro raw SWF server (port 8081)
+  http://arcturus.ghostnetw.test      Arcturus emulator + Nitro WebSocket (port 2096)
+  http://db.ghostnetw.test            phpMyAdmin (port 8083)
+  http://pgadmin.ghostnetw.test       pgAdmin 4 (port 8082)
+  http://mail.ghostnetw.test          Mailpit web inbox (port 8025)
+  http://s3-console.ghostnetw.test    MinIO console UI (port 9001)
+  http://s3.ghostnetw.test            MinIO S3 API (port 9000)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Day-2 commands
+═══════════════════════════════════════════════════════════════════════════════
+
+  npm run hosts:status       Show whether the hosts block is installed
+  npm run hosts:remove       Remove the block (cleans /etc/hosts)
+  npm run caddy:reload       Pick up Caddyfile edits without restarting
+  npm run caddy:fmt          Auto-format the Caddyfile
+  npm run caddy:validate     Lint the Caddyfile syntax
+  npm run e2e:hostnames      Cypress: DNS resolution + Caddy routing parity
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Adding a new hostname
+═══════════════════════════════════════════════════════════════════════════════
+
+ 1. Append a line to dev/caddy/hosts.local:
+      127.0.0.1   newapp.ghostnetw.test
+
+ 2. Add a matching site block to dev/caddy/Caddyfile:
+      http://newapp.ghostnetw.test {
+          reverse_proxy localhost:<port>
+      }
+
+ 3. Re-deploy + reload:
+      npm run hosts:install
+      npm run caddy:reload
+
+ 4. (Optional) add the hostname to the HOSTNAMES array in
+    tests/hostnames/cypress/e2e/dns-resolution.cy.ts so the smoke
+    suite covers it.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Going to HTTPS in dev
+═══════════════════════════════════════════════════════════════════════════════
+
+ Caddy ships its own local CA — flip auto-HTTPS on by:
+
+  1. Comment out `auto_https off` in dev/caddy/Caddyfile.
+  2. Change every `http://name { … }` to plain `name { … }`.
+  3. Run `caddy trust` once (admin/sudo) to add Caddy's root CA to your
+     system trust store. Browsers + cy.request will then accept the certs.
+  4. `npm run caddy:reload`.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Going to prod
+═══════════════════════════════════════════════════════════════════════════════
+
+ The Caddyfile already has commented-out blocks for the .com domains:
+
+  cdn.ghostnetw.com {
+      encode zstd gzip
+      reverse_proxy localhost:5500
+  }
+
+ Caddy auto-issues from Let's Encrypt for any public domain — no other
+ config change needed once DNS points at the host.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Why .test (and not .local)?
+═══════════════════════════════════════════════════════════════════════════════
+
+ RFC 6761 reserves `.test` for testing — it will NEVER resolve via real
+ DNS, so we can't accidentally collide with anything on the open internet.
+ `.local` is reserved for mDNS / Bonjour and gets special treatment by
+ macOS in particular, which can interfere with hosts-file resolution.

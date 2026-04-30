@@ -1,0 +1,143 @@
+{
+  // ═══════════════════════════════════════════════════════════════
+  // GHOSTNET dev container.
+  // VS Code reopens the workspace inside this container so every
+  // developer gets the same Node + DB + cache + mail + S3 stack.
+  // ═══════════════════════════════════════════════════════════════
+
+  // Display name shown in the VS Code remote-status bar.
+  "name": "GHOSTNET dev",
+
+  // Bring up the workspace + sibling services via docker compose.
+  // Running services live in `docker-compose.yml`; this config attaches
+  // VS Code to the `workspace` service.
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspaces/ghostnet",
+
+  // ─── Dev container "features": composable add-ons baked in at build time
+  //     Source: https://containers.dev/features
+  "features": {
+    // common-utils: zsh + oh-my-zsh, sudo for the non-root user, locale, etc.
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": false, // keep bash default; matches our CLAUDE assumption
+      "username": "node",
+      "upgradePackages": true
+    },
+    // Up-to-date git (the base image's version tends to lag).
+    "ghcr.io/devcontainers/features/git:1": {},
+    // GitHub CLI for `gh pr`, `gh repo clone`, etc.
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    // Talk to the host's Docker daemon from inside the container —
+    // useful when an app needs to run sibling Docker containers (testcontainers).
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "moby": true,
+      "installDockerBuildx": true
+    }
+  },
+
+  // ─── Ports forwarded to the host machine ──────────────────────
+  // The workspace can already reach service containers by name (postgres, redis,…)
+  // through the compose network. We forward a few extras so a host-side tool
+  // (DBeaver, Postman, browser) can connect too.
+  "forwardPorts": [
+    3000, // common HTTP app port (Next.js, Express, NestJS)
+    4200, // Angular dev-server default
+    5173, // Vite dev-server default
+    5432, // PostgreSQL
+    8082, // pgAdmin 4 (web GUI for PostgreSQL)
+    3306, // MySQL (Retro / Habbo emulator)
+    8083, // phpMyAdmin (web GUI for MySQL) — moved off 8081 to free it for Retro's SWF server
+    6379, // Redis
+    8025, // Mailpit web UI
+    1025, // Mailpit SMTP
+    9000, // MinIO S3 API
+    9001 // MinIO web console
+  ],
+  "portsAttributes": {
+    "3000": { "label": "App :3000", "onAutoForward": "notify" },
+    "4200": { "label": "App :4200", "onAutoForward": "notify" },
+    "5173": { "label": "App :5173 (Vite)", "onAutoForward": "notify" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "8082": { "label": "pgAdmin 4 (web)", "onAutoForward": "openBrowserOnce" },
+    "3306": { "label": "MySQL (Retro)", "onAutoForward": "silent" },
+    "8083": { "label": "phpMyAdmin (web)", "onAutoForward": "openBrowserOnce" },
+    "6379": { "label": "Redis", "onAutoForward": "silent" },
+    "8025": { "label": "Mailpit (web)", "onAutoForward": "silent" },
+    "1025": { "label": "Mailpit (SMTP)", "onAutoForward": "silent" },
+    "9000": { "label": "MinIO (S3)", "onAutoForward": "silent" },
+    "9001": { "label": "MinIO (console)", "onAutoForward": "silent" }
+  },
+
+  // ─── Lifecycle hooks ──────────────────────────────────────────
+  // Runs once after the container is built. Installs npm deps so the
+  // workspace is ready to use immediately.
+  "postCreateCommand": "npm install",
+  // Runs every time the container starts. Cheap sanity print.
+  "postStartCommand": "node --version && npm --version && psql --version && mysql --version && redis-cli --version",
+
+  // ─── Customizations specific to the VS Code remote client ─────
+  "customizations": {
+    "vscode": {
+      // Extensions auto-installed inside the container (independent of the
+      // host install). Mirrors .vscode/extensions.json + DB/Docker tools.
+      "extensions": [
+        // ─ Core: linting + formatting
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        // ─ Nx
+        "nrwl.angular-console",
+        // ─ Quality of life
+        "editorconfig.editorconfig",
+        "yoavbls.pretty-ts-errors",
+        "usernamehw.errorlens",
+        "streetsidesoftware.code-spell-checker",
+        "christian-kohler.path-intellisense",
+        "gruntfuggly.todo-tree",
+        "redhat.vscode-yaml",
+        // ─ Container-specific extras
+        "ms-azuretools.vscode-docker", // Docker integration in the sidebar
+        "mtxr.sqltools", // generic SQL client
+        "mtxr.sqltools-driver-pg", // PostgreSQL driver for SQLTools
+        "mtxr.sqltools-driver-mysql" // MySQL driver for SQLTools (Retro DB)
+      ],
+      // Container-specific setting overrides.
+      "settings": {
+        // Default to bash inside the container.
+        "terminal.integrated.defaultProfile.linux": "bash",
+
+        // Pre-configured SQLTools connection — appears in the SQLTools sidebar
+        // the moment the container is up. Credentials are dev-only; matched
+        // to the postgres service in docker-compose.yml.
+        "sqltools.connections": [
+          {
+            "name": "GHOSTNET (dev)",
+            "driver": "PostgreSQL",
+            "previewLimit": 50,
+            "server": "postgres",
+            "port": 5432,
+            "database": "ghostnet",
+            "username": "ghostnet",
+            "password": "ghostnet"
+          },
+          {
+            "name": "Retro / Habbo (dev)",
+            "driver": "MySQL",
+            "previewLimit": 50,
+            "server": "mysql",
+            "port": 3306,
+            "database": "retro",
+            "username": "retro",
+            "password": "retro"
+          }
+        ]
+      }
+    }
+  },
+
+  // ─── Identity inside the container ────────────────────────────
+  // Run as the non-root `node` user — avoids permission headaches on
+  // bind-mounted source files and matches the base image conventions.
+  "remoteUser": "node"
+}

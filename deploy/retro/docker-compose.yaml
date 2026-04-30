@@ -1,0 +1,96 @@
+# GHOSTNET Retro — production-style compose.
+#
+# Distinct from dev/retro/docker-compose.yaml in every way that matters:
+#   • Pre-baked images (no source bind-mounts; build once, ship many times)
+#   • Multi-stage Dockerfiles that produce thin runtime images
+#   • Secrets via .env (`compose --env-file`), never in this file
+#   • Ports bind to 127.0.0.1 only — assume a reverse proxy in front
+#   • Healthcheck-driven dependencies and restart policies
+#
+# Build:        npm run retro:build
+# Bring up:     npm run retro:deploy:up
+# Tear down:    npm run retro:deploy:down
+# Wipe volumes: npm run retro:deploy:down:clean
+
+services:
+  # ───────────────────────────────────────────────────────────────
+  # mariadb: standalone DB for the production hotel.
+  # Seeded on first run from /docker-entrypoint-initdb.d (baked in).
+  # ───────────────────────────────────────────────────────────────
+  mariadb:
+    image: ghostnet-retro/mariadb:${RETRO_VERSION:-latest}
+    build:
+      # Build context is the repo root so the Dockerfile can pull source
+      # out of dev/retro/ (which holds the canonical submodules).
+      context: ../..
+      dockerfile: deploy/retro/mariadb/Dockerfile
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-arcturus}
+      MYSQL_USER: ${MYSQL_USER:-arcturus_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      # Loopback-only — a host-level reverse proxy / firewall handles exposure.
+      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  # ───────────────────────────────────────────────────────────────
+  # arcturus: emulator (Habbo.jar baked into the image).
+  # ───────────────────────────────────────────────────────────────
+  arcturus:
+    image: ghostnet-retro/arcturus:${RETRO_VERSION:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/retro/arcturus/Dockerfile
+    restart: unless-stopped
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: "3306"
+      DB_NAME: ${MYSQL_DATABASE:-arcturus}
+      DB_USER: ${MYSQL_USER:-arcturus_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    ports:
+      - "127.0.0.1:${ARCTURUS_GAME_PORT:-3000}:3000"
+      - "127.0.0.1:${ARCTURUS_RCON_PORT:-3001}:3001"
+      - "127.0.0.1:${ARCTURUS_WEBSOCKET_PORT:-2096}:2096"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  # ───────────────────────────────────────────────────────────────
+  # nitro: HTML5 client static bundle (Vite build baked into nginx).
+  # ───────────────────────────────────────────────────────────────
+  nitro:
+    image: ghostnet-retro/nitro:${RETRO_VERSION:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/retro/nitro/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${NITRO_PORT:-1080}:80"
+
+  # ───────────────────────────────────────────────────────────────
+  # assets: pre-converted .nitro bundles + gamedata served by nginx.
+  # The bundles are produced by `npm run retro:assets:extract` in dev/
+  # and copied into the image at build time.
+  # ───────────────────────────────────────────────────────────────
+  assets:
+    image: ghostnet-retro/assets:${RETRO_VERSION:-latest}
+    build:
+      context: ../..
+      dockerfile: deploy/retro/assets/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ASSETS_PORT:-8080}:80"
+
+volumes:
+  # Production data lives ONLY in this volume. Back it up.
+  mariadb-data:

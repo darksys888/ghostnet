@@ -1,0 +1,41 @@
+{
+  // Disable VS Code's "compile on save" behavior — Nx orchestrates builds, not the editor.
+  "compileOnSave": false,
+  "compilerOptions": {
+    // Anchor for relative paths used by `paths` and project references below.
+    "rootDir": ".",
+
+    // ── Output / interop ──────────────────────────────────────────
+    "sourceMap": true, // emit .map files for debugging
+    "declaration": false, // root config does not emit .d.ts; per-project libs override
+    "moduleResolution": "node", // standard Node-style resolution
+    "emitDecoratorMetadata": true, // required by NestJS / TypeORM / class-validator
+    "experimentalDecorators": true, // legacy decorators (stage-2) — needed by frameworks above
+    "importHelpers": true, // pull TS helpers from tslib instead of inlining
+    "esModuleInterop": true, // `import x from 'cjs'` works without `* as`
+    "forceConsistentCasingInFileNames": true, // fail on case mismatches (Linux ≠ Windows)
+
+    // ── Language target ───────────────────────────────────────────
+    "target": "ES2022", // modern engines (Node 18+, evergreen browsers)
+    "module": "esnext", // let bundlers / per-project tsconfig pick module format
+    "lib": ["ES2022", "dom"], // ambient types: ES2022 stdlib + DOM globals
+
+    // ── Performance ───────────────────────────────────────────────
+    "skipLibCheck": true, // skip type-checking node_modules .d.ts (huge speedup)
+    "skipDefaultLibCheck": true, // same idea for the bundled lib.*.d.ts files
+
+    // ── Strictness (UHQ) ──────────────────────────────────────────
+    "strict": true, // master switch → enables all strict-mode flags
+    "noImplicitOverride": true, // `override` keyword required when overriding methods
+    "noImplicitReturns": true, // every code path must return
+    "noFallthroughCasesInSwitch": true, // missing `break`/`return` is an error
+    "noUnusedLocals": true, // dead variables fail the build
+
+    // ── Module aliasing ───────────────────────────────────────────
+    "baseUrl": ".", // resolve non-relative imports from repo root
+    "paths": {} // populated automatically when libs are generated via `nx g`
+  },
+
+  // Folders TypeScript should never traverse.
+  "exclude": ["node_modules", "tmp"]
+}

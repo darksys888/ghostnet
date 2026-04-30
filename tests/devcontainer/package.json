@@ -1,0 +1,22 @@
+{
+  "name": "@ghostnet/tests-devcontainer",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cypress smoke + functional tests for the .devcontainer service stack.",
+  "scripts": {
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^7.0.0",
+    "@types/pg": "^8.11.10",
+    "cypress": "^14.0.0",
+    "dotenv": "^17.0.0",
+    "ioredis": "^5.5.0",
+    "mysql2": "^3.13.0",
+    "nodemailer": "^7.0.0",
+    "pg": "^8.13.0"
+  }
+}

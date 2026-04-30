@@ -1,0 +1,5 @@
+# Real production env file — never committed.
+.env
+
+# Nothing else here is generated; everything else is built into images
+# at `npm run retro:build` time.

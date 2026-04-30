@@ -1,0 +1,30 @@
+# dev/retro local — never commit binaries / dumps / built clients.
+
+# ── Build cache (Arcturus source clone, downloaded archives) ─────
+.build/
+
+# ── Local env override ───────────────────────────────────────────
+.env
+
+# ── Emulator binaries (provided by the developer) ────────────────
+arcturus/jars/*.jar
+arcturus/plugins/*.jar
+arcturus/logs/
+arcturus/camera/
+
+# ── CMS source (drop-in; usually pulled from a separate repo) ────
+cms/public/*
+!cms/public/.gitkeep
+
+# ── Nitro client build (pulled separately) ───────────────────────
+nitro/public/*
+!nitro/public/.gitkeep
+
+# ── Game assets (SWFs, figuredata, productdata, sounds) ──────────
+assets/public/*
+!assets/public/.gitkeep
+
+# ── Schema dumps (large, often licensed separately) ──────────────
+mysql-init/*.sql
+mysql-init/*.sql.gz
+!mysql-init/.gitkeep

@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # Root npm workspace + every nested workspace.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+          - "typescript-eslint"
+          - "@typescript-eslint/*"
+      cypress:
+        patterns: ["cypress", "@cypress/*"]
+      fastify:
+        patterns: ["fastify", "@fastify/*"]
+      nx:
+        patterns: ["nx", "@nx/*"]
+      types:
+        patterns: ["@types/*"]
+      prettier:
+        patterns: ["prettier", "@prettier/*"]
+
+  # GitHub Actions used in workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+
+  # Docker base images in our Dockerfiles.
+  - package-ecosystem: docker
+    directories:
+      - /
+      - /.devcontainer
+      - /deploy/retro/arcturus
+      - /deploy/retro/nitro
+      - /deploy/retro/assets
+      - /deploy/retro/mariadb
+      - /services/cdn
+    schedule:
+      interval: weekly
+      day: monday

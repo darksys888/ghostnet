@@ -1,0 +1,67 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": ["{projectRoot}/**/*", "sharedGlobals"],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/**/*.{cy,e2e}.[jt]s?(x)",
+      "!{projectRoot}/cypress/**/*",
+      "!{projectRoot}/cypress.config.[jt]s",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/vitest.config.[jt]s",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}",
+      "!{projectRoot}/src/test-setup.[jt]s"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/eslint.config.mjs",
+      "{workspaceRoot}/.prettierrc.cjs",
+      "{workspaceRoot}/.prettierignore",
+      "{workspaceRoot}/.editorconfig",
+      "{workspaceRoot}/package.json"
+    ]
+  },
+  "targetDefaults": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/build",
+        "{projectRoot}/.next",
+        "!{projectRoot}/.next/cache",
+        "{projectRoot}/out",
+        "{workspaceRoot}/dist/{projectRoot}"
+      ]
+    },
+    "lint": {
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/eslint.config.mjs"]
+    },
+    "test": {
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "outputs": ["{projectRoot}/coverage"]
+    },
+    "typecheck": {
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/tsconfig.base.json"]
+    },
+    "e2e": {
+      "cache": false,
+      "dependsOn": ["^build"]
+    },
+    "serve": {
+      "continuous": true,
+      "dependsOn": ["^build"]
+    }
+  },
+  "parallel": 3,
+  "defaultBase": "main",
+  "defaultProject": "ghostnet",
+  "useDaemonProcess": true
+}

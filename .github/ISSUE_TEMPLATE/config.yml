@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Internal docs
+    url: https://github.com/darksys888/ghostnet/blob/main/AGENTS.md
+    about: Workflow + commit conventions for AI assistants and humans alike.

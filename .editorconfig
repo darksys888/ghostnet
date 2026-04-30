@@ -1,0 +1,52 @@
+# EditorConfig — normalises whitespace across editors before Prettier even
+# runs. Docs: https://editorconfig.org/
+# Pairs with .gitattributes (line endings) and .prettierrc.cjs (formatting).
+
+# Stop walking up the directory tree once this file is reached.
+root = true
+
+# ── Defaults applied to every file in the repo ───────────────────
+[*]
+charset                  = utf-8                # always UTF-8 (no BOM)
+end_of_line              = lf                   # match Prettier `endOfLine: 'lf'`
+indent_style             = space                # spaces, never tabs
+indent_size              = 2                    # match Prettier `tabWidth: 2`
+insert_final_newline     = true                 # POSIX-correct EOF newline
+trim_trailing_whitespace = true                 # strip trailing whitespace on save
+max_line_length          = 100                  # match Prettier `printWidth: 100`
+
+# ── Markdown: preserve trailing whitespace (two spaces = hard break) ─
+[*.{md,markdown}]
+trim_trailing_whitespace = false
+max_line_length          = off                  # prose wraps at editor width
+
+# ── Makefiles REQUIRE tab-indented recipes ───────────────────────
+[{Makefile,*.mk,GNUmakefile}]
+indent_style    = tab
+max_line_length = off
+
+# ── Dockerfiles — 2-space convention works fine, but ignore wrap ─
+[{Dockerfile,*.dockerfile}]
+max_line_length = off
+
+# ── Shell scripts — Google style guide is 2 space, but bash also OK ─
+[*.{sh,bash,zsh}]
+indent_size = 2
+
+# ── Python (when added) — official style is 4 spaces ─────────────
+[*.py]
+indent_size     = 4
+max_line_length = 88                            # Black-compatible
+
+# ── Go (when added) — tabs (gofmt enforces) ──────────────────────
+[*.go]
+indent_style    = tab
+max_line_length = off
+
+# ── YAML — strict 2 spaces, no tabs (YAML spec forbids tabs) ─────
+[*.{yml,yaml}]
+indent_size = 2
+
+# ── SQL — 4 spaces is the more common convention ────────────────
+[*.sql]
+indent_size = 4

@@ -1,0 +1,27 @@
+# CODEOWNERS — automatic reviewer assignment.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-security/managing-other-settings/managing-the-default-branch-name
+
+# Default — owner reviews everything.
+*       @darksys888
+
+# Workflow files + agent rules — owner-only territory.
+/.github/                 @darksys888
+/AGENTS.md                @darksys888
+/CLAUDE.md                @darksys888
+
+# Production deploy + release scripts.
+/deploy/                  @darksys888
+/scripts/retro-release.sh @darksys888
+/scripts/cdn-push.sh      @darksys888
+/scripts/hosts.sh         @darksys888
+/scripts/hosts.ps1        @darksys888
+
+# Cross-cutting tooling.
+/Dockerfile               @darksys888
+/.dockerignore            @darksys888
+/nx.json                  @darksys888
+/eslint.config.mjs        @darksys888
+/.prettierrc.cjs          @darksys888
+
+# Test suites.
+/tests/                   @darksys888

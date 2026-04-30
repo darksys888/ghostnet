@@ -1,0 +1,55 @@
+# Root .dockerignore — applies to every `docker build` rooted at the repo.
+# Keeps the build context small (faster transfers, smaller layer cache).
+#
+# IMPORTANT: do NOT exclude dev/retro/. The deploy/retro/* Dockerfiles use
+# the repo root as their build context and need to COPY from dev/retro/
+# (Holo5 submodules + SQL dumps).
+
+# ── Dependencies (will be installed inside the image) ────────────
+**/node_modules
+**/.pnp
+**/.pnp.js
+
+# ── Build outputs ────────────────────────────────────────────────
+**/dist
+**/build
+**/out
+**/.next
+**/coverage
+**/.nx
+**/.cache
+**/*.tsbuildinfo
+
+# ── Environment / secrets ────────────────────────────────────────
+**/.env
+**/.env.*
+!**/.env.example
+
+# ── VCS / CI ─────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+.github
+.gitlab-ci.yml
+
+# ── Editor / OS cruft ────────────────────────────────────────────
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────────────────────────
+**/*.log
+
+# ── Local-dev / scratch directories that shouldn't ship ──────────
+**/tmp
+**/.turbo
+
+# ── The Cypress binary (huge; tests don't run inside the image) ──
+**/cypress/screenshots
+**/cypress/videos
+**/cypress/downloads
+
+# ── Docs we don't need at build time ─────────────────────────────
+**/*.md
+!README.md

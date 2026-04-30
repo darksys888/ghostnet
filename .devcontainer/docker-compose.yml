@@ -1,0 +1,230 @@
+# GHOSTNET local development services.
+# Spawned automatically when the dev container starts (devcontainer.json
+# references this file). Every service is reachable from the workspace
+# container by its service name (e.g. `postgres:5432`, `redis:6379`).
+
+# Compose v2 no longer needs a top-level `version` field — omitted on purpose.
+
+services:
+  # ───────────────────────────────────────────────────────────────
+  # workspace: the dev container itself.
+  # VS Code attaches here; this is where you edit code and run npm.
+  # ───────────────────────────────────────────────────────────────
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Keep the container alive after VS Code disconnects.
+    command: sleep infinity
+    # Bind-mount the entire repo into /workspaces/ghostnet.
+    # `cached` improves I/O performance on macOS; harmless on Linux/Windows.
+    volumes:
+      - ../..:/workspaces:cached
+      # Persist npm cache across rebuilds.
+      - node-modules-cache:/home/node/.npm
+    # App env vars matched to the sibling services below.
+    # Apps reading via `process.env.DATABASE_URL` etc. will Just Work.
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgres://ghostnet:ghostnet@postgres:5432/ghostnet
+      # MySQL — for the Retro (Habbo emulator) stack. Both styles provided:
+      #  • RETRO_DB_URL — for ORMs / libraries that take a single URL
+      #  • RETRO_DB_*    — for emulator config files (config.ini, etc.)
+      RETRO_DB_URL: mysql://retro:retro@mysql:3306/retro
+      RETRO_DB_HOST: mysql
+      RETRO_DB_PORT: "3306"
+      RETRO_DB_NAME: retro
+      RETRO_DB_USER: retro
+      RETRO_DB_PASSWORD: retro
+      REDIS_URL: redis://redis:6379
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      S3_ENDPOINT: http://minio:9000
+      S3_REGION: us-east-1
+      S3_ACCESS_KEY: minioadmin
+      S3_SECRET_KEY: minioadmin
+      S3_BUCKET: ghostnet-dev
+    # Don't start the workspace until backing services are healthy.
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+      minio:
+        condition: service_healthy
+
+  # ───────────────────────────────────────────────────────────────
+  # postgres: relational database.
+  # Connect from the workspace as `postgres:5432`, from the host as `localhost:5432`.
+  # ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ghostnet
+      POSTGRES_PASSWORD: ghostnet # dev-only credential
+      POSTGRES_DB: ghostnet
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Any *.sql or *.sh dropped in here is executed once on first start.
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ghostnet -d ghostnet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ───────────────────────────────────────────────────────────────
+  # pgadmin: web GUI for the postgres service above.
+  # Browse to http://localhost:8082 and log in with admin@ghostnet.local / admin.
+  # The GHOSTNET server connection is pre-registered via servers.json — you'll
+  # only need to type the postgres password (`ghostnet`) once on first connect.
+  # ───────────────────────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ghostnet.local # dev-only credential
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False" # single-user (no team management)
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False" # skip master-password prompt
+      PGADMIN_DISABLE_POSTFIX: "True" # skip mail server init → faster startup
+      PGADMIN_LISTEN_PORT: 80
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      # Pre-defined Postgres connection — appears in the sidebar on first load.
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+    ports:
+      - "8082:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ───────────────────────────────────────────────────────────────
+  # mysql: relational database for the Retro (Habbo) emulator stack.
+  # Arcturus Morningstar, Plus EMU, etc. expect MySQL/MariaDB.
+  # Connect from the workspace as `mysql:3306`, from the host as `localhost:3306`.
+  # ───────────────────────────────────────────────────────────────
+  mysql:
+    # MariaDB 10.6 chosen deliberately — it's what Arcturus / Plus EMU
+    # JDBC drivers were tested against, and Holo5/nitro-docker uses it too.
+    # MySQL 8.4 dropped the `default-authentication-plugin` flag and would
+    # break older emulator clients.
+    image: mariadb:10.6
+    restart: unless-stopped
+    command:
+      - --default-authentication-plugin=mysql_native_password
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --skip-name-resolve
+    environment:
+      MYSQL_ROOT_PASSWORD: root # dev-only credential
+      MYSQL_DATABASE: retro
+      MYSQL_USER: retro
+      MYSQL_PASSWORD: retro
+    volumes:
+      - mysql-data:/var/lib/mysql
+      # Init scripts auto-run on first start of an empty data volume.
+      - ./mysql-init:/docker-entrypoint-initdb.d:ro
+      # Holo5/Arcturus base + migration dumps. Read by the bootstrap
+      # script in mysql-init/ to seed the `arcturus` database.
+      - ../dev/retro/mysql/dumps:/arcturus-dumps:ro
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ───────────────────────────────────────────────────────────────
+  # phpmyadmin: web GUI for the MySQL service above.
+  # Browse to http://localhost:8081 and log in with retro/retro
+  # (or root/root for admin tasks).
+  # ───────────────────────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql # which DB server phpMyAdmin talks to
+      PMA_PORT: 3306
+      # Allow logging in as ANY user — pick retro/retro or root/root.
+      PMA_ARBITRARY: "0" # only the configured server is selectable
+      # Raise the SQL-import size limit so big emulator dumps go through.
+      UPLOAD_LIMIT: 256M
+    ports:
+      # 8083 host-side — port 8081 is reserved for the Nitro SWF server
+      # in dev/retro/. Both stacks now coexist without collision.
+      - "8083:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # ───────────────────────────────────────────────────────────────
+  # redis: cache + session store + lightweight queue.
+  # ───────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Persist data across restarts (AOF every second).
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ───────────────────────────────────────────────────────────────
+  # mailpit: SMTP catcher for testing email flows.
+  # Apps send mail to mailpit:1025; you read it at http://localhost:8025.
+  # ───────────────────────────────────────────────────────────────
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP intake
+      - "8025:8025" # web UI
+
+  # ───────────────────────────────────────────────────────────────
+  # minio: S3-compatible object storage.
+  # Use it instead of real AWS S3 during local development.
+  # Console:  http://localhost:9001  (login: minioadmin / minioadmin)
+  # S3 API:   http://localhost:9000
+  # ───────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Named volumes — persist across `docker compose down` (use `down -v` to wipe).
+volumes:
+  postgres-data:
+  pgadmin-data:
+  mysql-data:
+  redis-data:
+  minio-data:
+  node-modules-cache:

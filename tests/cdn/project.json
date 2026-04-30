@@ -1,0 +1,30 @@
+{
+  "name": "tests-cdn",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/cdn",
+  "projectType": "application",
+  "tags": ["scope:tests", "type:e2e", "target:cdn"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/cdn",
+        "command": "cypress run"
+      }
+    },
+    "e2e:open": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/cdn",
+        "command": "cypress open"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/cdn",
+        "command": "tsc --noEmit"
+      }
+    }
+  }
+}

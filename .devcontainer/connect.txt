@@ -1,0 +1,251 @@
+═══════════════════════════════════════════════════════════════════════════════
+ GHOSTNET — Local Development Connection Reference
+═══════════════════════════════════════════════════════════════════════════════
+
+ All credentials below are DEV-ONLY. Never reuse them in any other context.
+ Services are started automatically by .devcontainer/docker-compose.yml.
+
+ Two perspectives are documented for every service:
+   • inside  → reachable from the dev container by service name
+   • host    → reachable from your Windows / macOS / Linux host via localhost
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ PostgreSQL                                              (image: postgres:17)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Host (inside)   : postgres
+ Host (from host): localhost
+ Port            : 5432
+ Database        : ghostnet
+ Username        : ghostnet
+ Password        : ghostnet
+
+ ── Connection URLs ──────────────────────────────────────────────────────────
+ inside : postgres://ghostnet:ghostnet@postgres:5432/ghostnet
+ host   : postgres://ghostnet:ghostnet@localhost:5432/ghostnet
+
+ ── env var ──────────────────────────────────────────────────────────────────
+ DATABASE_URL = postgres://ghostnet:ghostnet@postgres:5432/ghostnet
+
+ ── CLI (inside the dev container) ───────────────────────────────────────────
+ psql "$DATABASE_URL"
+ psql -h postgres -U ghostnet -d ghostnet                  # interactive
+ psql -h postgres -U ghostnet -d ghostnet -c "SELECT 1;"   # one-shot
+
+ ── CLI (from the host) ──────────────────────────────────────────────────────
+ psql -h localhost -p 5432 -U ghostnet -d ghostnet
+
+ ── GUI clients (DBeaver / TablePlus / pgAdmin) ──────────────────────────────
+ host: localhost   port: 5432   user: ghostnet   pass: ghostnet   db: ghostnet
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ pgAdmin 4 — web GUI for PostgreSQL                      (image: dpage/pgadmin4)
+═══════════════════════════════════════════════════════════════════════════════
+
+ URL (from host) : http://localhost:8082
+ Mode            : single-user, no master-password prompt
+ Pre-registered  : the GHOSTNET server appears in the sidebar on first load
+
+ ── pgAdmin login (web UI) ───────────────────────────────────────────────────
+ Email     : admin@ghostnet.local
+ Password  : admin
+
+ ── First-time server connect ────────────────────────────────────────────────
+ Click "GHOSTNET (dev)" in the sidebar. pgAdmin will ask for the Postgres
+ password — enter `ghostnet`. Tick "Save Password" so it's remembered.
+
+ ── Common tasks ─────────────────────────────────────────────────────────────
+ Restore a dump        : right-click `ghostnet` DB → Restore… → pick .sql/.dump
+ Run a query           : Tools → Query Tool (Alt+Shift+Q)
+ Browse tables         : sidebar → ghostnet → Schemas → public → Tables
+ Inspect row counts    : right-click table → Properties → Statistics tab
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ MySQL — Retro / Habbo emulator                          (image: mariadb:10.6)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Host (inside)            : mysql
+ Host (from host)         : localhost
+ Port                     : 3306
+ Databases                : retro, arcturus
+   • retro      — your app DB (libs/services dev)
+   • arcturus   — the Retro emulator's DB, browsable via phpMyAdmin
+ App user / pass          : retro / retro                 (grants on retro + arcturus)
+ Retro emulator credential: arcturus_user / arcturus_pw   (grants on arcturus only)
+ Root user / pass         : root  / root                  (admin tasks only)
+ Auth plugin              : mysql_native_password         (Arcturus / Plus EMU compat)
+ Charset                  : utf8mb4 / utf8mb4_unicode_ci
+
+ ── Connection URLs ──────────────────────────────────────────────────────────
+ inside : mysql://retro:retro@mysql:3306/retro
+ host   : mysql://retro:retro@localhost:3306/retro
+
+ ── env vars ─────────────────────────────────────────────────────────────────
+ RETRO_DB_URL      = mysql://retro:retro@mysql:3306/retro
+ RETRO_DB_HOST     = mysql       # use `localhost` from the host
+ RETRO_DB_PORT     = 3306
+ RETRO_DB_NAME     = retro
+ RETRO_DB_USER     = retro
+ RETRO_DB_PASSWORD = retro
+
+ ── Emulator config.ini fields (Arcturus / Plus EMU) ─────────────────────────
+ db.hostname = mysql
+ db.port     = 3306
+ db.database = retro
+ db.username = retro
+ db.password = retro
+
+ ── CLI (inside the dev container) ───────────────────────────────────────────
+ mysql -h mysql -uretro -pretro retro
+ mysql -h mysql -uroot -proot                              # admin shell
+ mysql -h mysql -uretro -pretro retro -e "SHOW TABLES;"    # one-shot
+
+ ── CLI (from the host) ──────────────────────────────────────────────────────
+ mysql -h localhost -P 3306 -uretro -pretro retro
+
+ ── Loading an emulator schema dump ──────────────────────────────────────────
+ # Drop the file in .devcontainer/mysql-init/ — it auto-runs on first boot.
+ # To load AFTER the container is already up:
+ mysql -h mysql -uroot -proot retro < /workspaces/ghostnet/.devcontainer/mysql-init/arcturus.sql
+
+ ── GUI clients (DBeaver / TablePlus / HeidiSQL / MySQL Workbench) ───────────
+ host: localhost   port: 3306   user: retro   pass: retro   db: retro
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ phpMyAdmin — web GUI for MySQL                          (image: phpmyadmin)
+═══════════════════════════════════════════════════════════════════════════════
+
+ URL (from host) : http://localhost:8083    (moved off 8081 — Retro stack uses 8081 for its SWF server)
+ Pre-targets     : the `mysql` service (PMA_HOST=mysql, PMA_PORT=3306)
+ Upload limit    : 256 MB                  (raise UPLOAD_LIMIT to go higher)
+
+ ── Login options ────────────────────────────────────────────────────────────
+ App user  : retro / retro                  (sees retro + arcturus DBs)
+ Retro DB  : arcturus_user / arcturus_pw    (limited to arcturus DB only)
+ Admin     : root / root                    (full server access)
+
+ ── Common tasks ─────────────────────────────────────────────────────────────
+ Import a schema dump : log in as root → pick a DB → tab "Import" → pick file
+ Reset the DB         : log in as root → tab "Databases" → drop + recreate
+ Browse Retro data    : log in as arcturus_user → arcturus DB → tables list
+ Browse app data      : log in as retro → retro DB → tables list
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Redis                                                   (image: redis:7-alpine)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Host (inside)   : redis
+ Host (from host): localhost
+ Port            : 6379
+ Auth            : (none — dev mode)
+ Persistence     : AOF (every second)
+
+ ── Connection URLs ──────────────────────────────────────────────────────────
+ inside : redis://redis:6379
+ host   : redis://localhost:6379
+
+ ── env var ──────────────────────────────────────────────────────────────────
+ REDIS_URL = redis://redis:6379
+
+ ── CLI (inside the dev container) ───────────────────────────────────────────
+ redis-cli -h redis
+ redis-cli -h redis PING                                   # → PONG
+ redis-cli -h redis SET foo bar
+ redis-cli -h redis GET foo
+
+ ── CLI (from the host, with redis-cli installed) ────────────────────────────
+ redis-cli -h localhost -p 6379
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Mailpit — SMTP catcher                                  (image: axllent/mailpit)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Apps send outgoing mail to Mailpit; nothing leaves the dev environment.
+ Inspect every captured message in the web UI.
+
+ SMTP host (inside)   : mailpit         port 1025
+ SMTP host (from host): localhost       port 1025
+ SMTP auth            : none
+ Web UI (from host)   : http://localhost:8025
+
+ ── env vars ─────────────────────────────────────────────────────────────────
+ SMTP_HOST = mailpit       # use `localhost` from the host
+ SMTP_PORT = 1025
+ SMTP_FROM = "GHOSTNET dev <noreply@ghostnet.local>"
+
+ ── Smoke test (inside the dev container) ────────────────────────────────────
+ echo -e "Subject: hello\n\nbody" | nc mailpit 1025
+ # Then open http://localhost:8025 to see it.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ MinIO — S3-compatible object storage                    (image: minio/minio)
+═══════════════════════════════════════════════════════════════════════════════
+
+ S3 API (inside)      : http://minio:9000
+ S3 API (from host)   : http://localhost:9000
+ Web console          : http://localhost:9001
+ Access key           : minioadmin
+ Secret key           : minioadmin
+ Default bucket       : ghostnet-dev   (create on first use)
+ Region               : us-east-1
+ Force path-style     : true           (required by every non-AWS S3 client)
+
+ ── env vars ─────────────────────────────────────────────────────────────────
+ S3_ENDPOINT          = http://minio:9000      # use http://localhost:9000 from host
+ S3_REGION            = us-east-1
+ S3_ACCESS_KEY        = minioadmin
+ S3_SECRET_KEY        = minioadmin
+ S3_BUCKET            = ghostnet-dev
+ S3_FORCE_PATH_STYLE  = true
+
+ ── AWS CLI ──────────────────────────────────────────────────────────────────
+ aws --endpoint-url http://minio:9000 s3 ls
+ aws --endpoint-url http://minio:9000 s3 mb s3://ghostnet-dev
+ aws --endpoint-url http://minio:9000 s3 cp file.txt s3://ghostnet-dev/
+
+ ── MinIO Client (mc) ────────────────────────────────────────────────────────
+ mc alias set local http://minio:9000 minioadmin minioadmin
+ mc mb local/ghostnet-dev
+ mc ls local
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Compose service management                              (run from /workspaces)
+═══════════════════════════════════════════════════════════════════════════════
+
+ docker compose -f .devcontainer/docker-compose.yml ps                # status
+ docker compose -f .devcontainer/docker-compose.yml logs -f mysql     # tail logs
+ docker compose -f .devcontainer/docker-compose.yml restart mysql     # restart one
+ docker compose -f .devcontainer/docker-compose.yml exec mysql bash   # shell into a service
+ docker compose -f .devcontainer/docker-compose.yml down              # stop services (data preserved)
+ docker compose -f .devcontainer/docker-compose.yml down -v           # stop AND wipe volumes
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Forwarded ports (host ↔ container)
+═══════════════════════════════════════════════════════════════════════════════
+
+  3000  — App  (Next.js / Express / NestJS)
+  4200  — App  (Angular dev server)
+  5173  — App  (Vite dev server)
+  5432  — PostgreSQL
+  8082  — pgAdmin 4 (web GUI for PostgreSQL)
+  3306  — MySQL (Retro)
+  8083  — phpMyAdmin (web GUI for MySQL — also browses the arcturus / Retro DB)
+  6379  — Redis
+  1025  — Mailpit SMTP
+  8025  — Mailpit web UI
+  9000  — MinIO S3 API
+  9001  — MinIO web console
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ End of file
+═══════════════════════════════════════════════════════════════════════════════

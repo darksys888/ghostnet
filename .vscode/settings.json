@@ -1,0 +1,159 @@
+{
+  // ═══════════════════════════════════════════════════════════════
+  // GHOSTNET workspace — shared VS Code settings.
+  // User-specific tweaks belong in your USER settings, not this file.
+  // ═══════════════════════════════════════════════════════════════
+
+  // ─── Editor: visual style ──────────────────────────────────────
+  "editor.tabSize": 2, // matches .editorconfig + Prettier tabWidth
+  "editor.insertSpaces": true, // never tabs (Makefile is the documented exception)
+  "editor.detectIndentation": false, // do not auto-override the rules above
+  "editor.rulers": [100], // visual reminder of Prettier's printWidth
+  "editor.minimap.enabled": false, // most engineers prefer the screen real-estate
+  "editor.bracketPairColorization.enabled": true, // colour-match opening/closing brackets
+  "editor.guides.bracketPairs": "active", // highlight only the pair surrounding the cursor
+  "editor.linkedEditing": true, // rename matching JSX/HTML tag automatically
+  "editor.stickyScroll.enabled": true, // pin the enclosing scope to the top of the editor
+  "editor.suggest.preview": true, // ghost-text preview while picking suggestions
+  "editor.inlineSuggest.enabled": true, // enable inline suggestions (Copilot-friendly)
+  "editor.renderWhitespace": "boundary", // show whitespace at line edges only
+  "editor.cursorBlinking": "smooth", // less jarring cursor blink
+  "editor.semanticHighlighting.enabled": true, // language-server-driven token colours
+
+  // ─── Format on save with Prettier ──────────────────────────────
+  "editor.defaultFormatter": "esbenp.prettier-vscode", // global default formatter
+  "editor.formatOnSave": true, // every save runs Prettier
+  "editor.formatOnPaste": false, // would fight clipboard sources; keep off
+  "prettier.requireConfig": true, // refuse to format without a .prettierrc.* present
+
+  // ─── ESLint: flat config + auto-fix on save ────────────────────
+  "eslint.useFlatConfig": true, // we use eslint.config.mjs, not .eslintrc.*
+  "eslint.format.enable": false, // Prettier formats; ESLint only fixes
+  "eslint.run": "onType", // immediate inline diagnostics
+  "eslint.workingDirectories": [{ "mode": "auto" }], // detect per-package contexts inside the monorepo
+  "eslint.validate": [
+    // languages ESLint should lint
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit", // run `eslint --fix` on save
+    "source.organizeImports": "never" // import-x/order handles import order
+  },
+
+  // ─── TypeScript ────────────────────────────────────────────────
+  "typescript.tsdk": "node_modules/typescript/lib", // use workspace TS, not VS Code's bundled
+  "typescript.enablePromptUseWorkspaceTsdk": true, // prompt to switch when a workspace ships TS
+  "typescript.preferences.importModuleSpecifier": "non-relative", // prefer @workspace/foo over ../foo
+  "typescript.updateImportsOnFileMove.enabled": "always", // refactor imports when moving files
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true, // emit `import type` when possible
+  "typescript.inlayHints.parameterNames.enabled": "literals", // show param names for literal args only
+  "typescript.inlayHints.functionLikeReturnTypes.enabled": true, // show inferred return types
+  "typescript.inlayHints.propertyDeclarationTypes.enabled": true,
+  "typescript.inlayHints.variableTypes.enabled": false, // too noisy in practice
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false, // huge memory cost in big repos
+
+  // ─── Files: whitespace + line endings ──────────────────────────
+  "files.eol": "\n", // LF, matches Prettier endOfLine
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "files.trimTrailingWhitespace": true,
+
+  // ─── Files: associations (treat unusual filenames correctly) ───
+  "files.associations": {
+    ".prettierrc": "jsonc", // when used without an extension, force JSONC mode
+    ".prettierignore": "ignore", // gitignore-style highlighting
+    ".npmrc": "ini" // npm config uses INI syntax
+  },
+
+  // ─── Files: hide pure noise from the explorer ──────────────────
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/.nx/cache": true,
+    "**/.nx/workspace-data": true
+  },
+
+  // ─── Files: don't watch huge directories (perf) ────────────────
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.nx/**": true,
+    "**/dist/**": true,
+    "**/build/**": true,
+    "**/coverage/**": true,
+    "**/.next/**": true
+  },
+
+  // ─── Search: skip generated content for fast results ───────────
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.nx": true,
+    "**/coverage": true,
+    "**/package-lock.json": true,
+    "**/.next": true
+  },
+  "search.useIgnoreFiles": true, // honour .gitignore + .ignore
+  "search.useGlobalIgnoreFiles": true, // honour ~/.gitignore
+  "search.smartCase": true, // case-insensitive unless query contains uppercase
+
+  // ─── Per-language formatter pinning ────────────────────────────
+  // Pin Prettier explicitly so VS Code never falls back to a different formatter
+  // when multiple are installed (e.g. Beautify, Hightlight-Selections, etc.).
+  "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[javascriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[yaml]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[scss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  // ─── Language-specific tweaks (one block per language) ─────────
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "on", // wrap long prose for readability
+    // suppress completion popups while writing prose
+    "editor.quickSuggestions": { "comments": "off", "strings": "off", "other": "off" }
+  },
+  "[makefile]": {
+    "editor.insertSpaces": false, // GNU make REQUIRES tab-indented recipes
+    "editor.detectIndentation": false
+  },
+
+  // ─── Git ───────────────────────────────────────────────────────
+  "git.autofetch": true, // pull remote refs in the background
+  "git.confirmSync": false, // don't pop a dialog every sync
+  "git.enableSmartCommit": true, // commit all when nothing is staged
+  "git.openRepositoryInParentFolders": "always", // detect a repo above the workspace root
+
+  // ─── Terminal ──────────────────────────────────────────────────
+  "terminal.integrated.scrollback": 10000, // keep more output history
+  "terminal.integrated.copyOnSelection": true, // selection auto-copies (Linux-style)
+  "terminal.integrated.defaultProfile.windows": "Git Bash", // matches the shell our docs assume
+
+  // ─── Misc ──────────────────────────────────────────────────────
+  "explorer.confirmDelete": false, // safety net
+  "explorer.confirmDragAndDrop": false,
+  "explorer.compactFolders": false, // do not collapse single-child folder chains
+  "telemetry.telemetryLevel": "off", // disable VS Code telemetry
+  "npm.packageManager": "npm", // we use npm workspaces
+  "npm.autoDetect": "on", // surface the npm scripts in the explorer panel
+
+  // ─── Spell checker (cspell) ────────────────────────────────────
+  "cSpell.words": [
+    "ghostnet", // project name
+    "monorepo",
+    "tseslint",
+    "typecheck",
+    "tsbuildinfo",
+    "Nrwl",
+    "rimraf"
+  ]
+}

@@ -1,0 +1,51 @@
+# Files Prettier should never touch — generated, vendored, or format-sensitive.
+
+# ── Dependencies (managed by npm; never reformat) ────────────────
+node_modules
+.pnp
+.pnp.js
+
+# ── Build output ─────────────────────────────────────────────────
+dist
+build
+out
+.next
+.nx
+coverage
+*.tsbuildinfo
+
+# ── Lockfiles (npm/yarn/pnpm own these) ──────────────────────────
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ── Logs ─────────────────────────────────────────────────────────
+*.log
+
+# ── OS / editor cruft ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Minified / pre-bundled assets ────────────────────────────────
+*.min.js
+*.min.css
+
+# ── Tool caches ──────────────────────────────────────────────────
+.cache
+.turbo
+.eslintcache
+
+# ── Vendored / cloned third-party source we don't reformat ───────
+**/.build
+dev/retro/.build
+
+# Holo5/nitro-docker submodules — every one is a separate upstream repo.
+dev/retro/emulator/arcturus
+dev/retro/nitro/nitro-react
+dev/retro/nitro/nitro-converter
+dev/retro/nitro/nitro-assets
+dev/retro/nitro/nitro-swf
+
+# Bundled SQL dumps and any user-supplied binaries.
+dev/retro/mysql/dumps/*.sql
+dev/retro/HOLO5.md

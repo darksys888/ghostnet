@@ -1,0 +1,64 @@
+# GHOSTNET Retro stack — adapted from Holo5/nitro-docker.
+#
+# CHANGE FROM UPSTREAM HOLO5: the dedicated `mysql` service has been removed.
+# We instead rely on the MariaDB in `.devcontainer/docker-compose.yml`, which
+# is bootstrapped with the `arcturus` database via .devcontainer/mysql-init/.
+# That way you can browse the live Habbo DB through phpMyAdmin at :8081.
+#
+# Prereq: bring `.devcontainer` up FIRST (`npm run dev:up`). Compose refuses
+# to start `arcturus` if the external `devcontainer_default` network does
+# not exist.
+
+volumes:
+  volume-arcturus-maven-repo:
+  volume-arcturus-target:
+  volume-nitro-converter-node-modules:
+  volume-nitro-react-node-modules:
+
+services:
+  arcturus:
+    container_name: arcturus
+    build:
+      context: emulator
+    entrypoint: ["/bin/sh", "/app/scripts/build.sh"]
+    volumes:
+      - ./emulator/:/app/
+      - volume-arcturus-target:/app/arcturus/target
+      - volume-arcturus-maven-repo:/root/.m2
+    ports:
+      - 3000:3000
+      - 3001:3001
+      - 2096:2096
+    networks:
+      # `nitro` keeps arcturus reachable from the nitro container (e.g. for
+      # ws://arcturus:3001 if that's ever used).
+      - nitro
+      # `devcontainer` is the external compose network that hosts the
+      # MariaDB service named `mysql`. config.ini's `db.hostname=mysql` is
+      # resolved here.
+      - devcontainer
+
+  nitro:
+    container_name: nitro
+    build:
+      context: nitro
+    entrypoint: ["/bin/sh", "/app/scripts/build.sh"]
+    volumes:
+      - ./nitro/:/app/
+      - volume-nitro-converter-node-modules:/app/nitro-converter/node_modules
+      - volume-nitro-react-node-modules:/app/nitro-react/node_modules
+    ports:
+      - 1080:5154
+      - 8080:8080
+      - 8081:8081
+    networks:
+      - nitro
+
+networks:
+  # Default compose network for inter-service comms within the Retro stack.
+  nitro:
+  # External network — the .devcontainer compose project's default network.
+  # Bring `.devcontainer` up first; this stack will fail to start otherwise.
+  devcontainer:
+    external: true
+    name: devcontainer_default

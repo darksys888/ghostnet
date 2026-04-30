@@ -1,0 +1,104 @@
+═══════════════════════════════════════════════════════════════════════════════
+ GHOSTNET Retro — production deployment
+═══════════════════════════════════════════════════════════════════════════════
+
+ This stack is the production cousin of dev/retro/. It is intentionally
+ different in every way that matters for shipping:
+
+   • Pre-baked images (no source bind-mounts; build once, run repeatedly)
+   • Multi-stage Dockerfiles produce thin runtime images
+   • Secrets live in deploy/retro/.env (gitignored, never committed)
+   • All host ports bind to 127.0.0.1 — assume an external reverse proxy
+     terminates TLS and forwards public traffic
+   • MariaDB volume is the SOURCE OF TRUTH for prod data — back it up
+
+ Same submodules, same DB schema, same architecture as dev — just
+ hardened for ship.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ First-time build & deploy
+═══════════════════════════════════════════════════════════════════════════════
+
+ 1. cp deploy/retro/.env.example deploy/retro/.env
+ 2. Edit deploy/retro/.env — replace EVERY `replace-me-*` value.
+ 3. Make sure assets are extracted in dev/ (one-time):
+       npm run retro:assets:extract
+    (the `assets` image bakes in dev/retro/nitro/nitro-assets/, so the
+     converter must have populated it first)
+ 4. Build all four images (~10-15 min cold):
+       npm run retro:build
+ 5. Start the stack:
+       npm run retro:deploy:up
+ 6. Watch first boot (DB seeds + emulator boots):
+       npm run retro:deploy:logs
+ 7. Smoke test:
+       curl -i http://127.0.0.1:1080
+       curl -i http://127.0.0.1:8080/bundled/figure/acc_chest_U_fruitbag.nitro
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Image inventory
+═══════════════════════════════════════════════════════════════════════════════
+
+  ghostnet-retro/mariadb:${RETRO_VERSION}    DB + Arcturus schema seed
+  ghostnet-retro/arcturus:${RETRO_VERSION}   JRE + Habbo.jar + NitroWebsockets
+  ghostnet-retro/nitro:${RETRO_VERSION}      nginx + Vite-built static client
+  ghostnet-retro/assets:${RETRO_VERSION}     nginx + ~10k .nitro bundles
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Bound ports (loopback only — front with nginx/Caddy)
+═══════════════════════════════════════════════════════════════════════════════
+
+  127.0.0.1:1080  → Nitro client
+  127.0.0.1:8080  → asset server
+  127.0.0.1:3000  → Arcturus game socket (TCP / Nitro WebSocket)
+  127.0.0.1:3001  → Arcturus RCON
+  127.0.0.1:2096  → Arcturus camera + REST
+  127.0.0.1:3306  → MariaDB
+
+ Add reverse-proxy entries on the host (nginx, Caddy, Traefik, …) to
+ expose these on the public address with TLS.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Day-2 commands (npm scripts)
+═══════════════════════════════════════════════════════════════════════════════
+
+  retro:build               build all 4 prod images
+  retro:build:nocache       same, no layer cache (forces a clean rebuild)
+  retro:deploy:up           start the stack
+  retro:deploy:down         stop, KEEP data volume
+  retro:deploy:down:clean   stop AND wipe the mariadb volume — total reset
+  retro:deploy:restart      restart all services
+  retro:deploy:ps           service status
+  retro:deploy:logs         tail every service
+  retro:deploy:mysql        mysql shell into the prod MariaDB
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Backup / restore (do this regularly in real prod)
+═══════════════════════════════════════════════════════════════════════════════
+
+  Backup:  docker compose -f deploy/retro/docker-compose.yaml exec -T mariadb \
+             mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE \
+             | gzip > backup-$(date +%F).sql.gz
+
+  Restore: zcat backup-2026-04-30.sql.gz | docker compose -f \
+             deploy/retro/docker-compose.yaml exec -T mariadb \
+             mysql -uroot -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ What this DOESN'T do (out of scope)
+═══════════════════════════════════════════════════════════════════════════════
+
+ • TLS termination → use host nginx/Caddy + Let's Encrypt
+ • Log aggregation → wire `logging:` driver per service
+ • Metrics / observability → add Prometheus exporters / a sidecar
+ • Multi-host scaling → port to k8s/swarm, treat compose as the dev parity
+ • CDN for assets → mirror /usr/share/nginx/html out to a CDN bucket
+
+ Today this stack matches the shape of your remote install on
+ 162.0.222.69 (per project memory). It's the local reproducible baseline.

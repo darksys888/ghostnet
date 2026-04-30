@@ -1,0 +1,171 @@
+═══════════════════════════════════════════════════════════════════════════════
+ GHOSTNET — Retro (Habbo) Local Development Reference
+ Stack: Holo5/nitro-docker (the same base your remote install on
+        162.0.222.69 forks from)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Bring up:
+   npm run retro:up                              (or)  make retro-up
+ First build takes ~5-10 minutes:
+   • Maven downloads + compiles Arcturus 3.5.x
+   • npm install for nitro-react + nitro-converter (~2-3k packages)
+   • MariaDB initialises from the bundled SQL dumps
+
+ Three services. ALL ports live on host localhost.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Quick start — first run
+═══════════════════════════════════════════════════════════════════════════════
+
+ 1. npm run retro:up
+ 2. Wait until `npm run retro:logs` shows "Arcturus Emulator started" + nitro
+    dev server "compiled successfully".
+ 3. Convert assets (one-time, ~2-3 min):     npm run retro:assets:extract
+ 4. Open the client with the pre-baked SSO ticket:
+      http://localhost:1080?sso=123
+ 5. You're in. Log in as the default account, walk into a room, you're done.
+
+ If the client hangs at "20%", the assets haven't been extracted — go back to
+ step 3.
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ MariaDB — SHARED with .devcontainer                      (image: mariadb:10.6)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Important: this stack no longer ships its own MySQL container. Arcturus
+ connects to the MariaDB inside .devcontainer/docker-compose.yml so you
+ can browse the live `arcturus` DB with the .devcontainer phpMyAdmin.
+
+ Bring `.devcontainer` up FIRST (or compose will refuse to start arcturus
+ since the external `devcontainer_default` network won't exist):
+     npm run dev:up
+
+ ── How it's wired ───────────────────────────────────────────────────────────
+   1. .devcontainer/mysql-init/01-bootstrap-arcturus.sh creates the `arcturus`
+      DB + user, then loads dev/retro/mysql/dumps/*.sql into it.
+   2. dev/retro/docker-compose.yaml joins the external `devcontainer_default`
+      network, so `mysql` resolves to the .devcontainer MariaDB.
+
+ ── Connection (from anywhere on the compose network) ────────────────────────
+ Host                     : mysql
+ Port                     : 3306
+ Database                 : arcturus
+ User / pass              : arcturus_user / arcturus_pw
+
+ ── From the Windows host ────────────────────────────────────────────────────
+ mysql -h localhost -P 3306 -uarcturus_user -parcturus_pw arcturus
+
+ ── Browse the DB visually ───────────────────────────────────────────────────
+ phpMyAdmin:  http://localhost:8083
+ Log in as:   retro / retro       (sees retro + arcturus)
+              arcturus_user / arcturus_pw   (arcturus only)
+              root / root         (everything, admin)
+
+ ── Initial schema ───────────────────────────────────────────────────────────
+ Bundled in dev/retro/mysql/dumps/, loaded by the bootstrap script:
+   • arcturus_3.0.0-stable_base_database--compact.sql
+   • arcturus_migration_3.0.0_to_3.5.0.sql
+ Pre-seeded with a default SSO ticket: 123  (used by the URL above)
+
+ ── CLI shells ───────────────────────────────────────────────────────────────
+ npm run retro:mysql        (mysql shell against arcturus DB)
+ npm run dev:mysql          (the .devcontainer side, retro DB by default)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Arcturus emulator                                        (image: built locally)
+═══════════════════════════════════════════════════════════════════════════════
+
+ Game socket / Nitro WebSocket : localhost:3000
+ Secondary game port           : localhost:3001
+ RCON / camera webserver       : localhost:2096
+
+ ── Source ───────────────────────────────────────────────────────────────────
+ dev/retro/emulator/arcturus/   (git submodule of Arcturus-Community 3.5.x)
+ dev/retro/emulator/config.ini  (live-edit; restart with retro-recompile)
+
+ ── Recompile after Java edits ───────────────────────────────────────────────
+ npm run retro:recompile     # mvn package inside container, then supervisorctl restart
+
+ ── Logs ─────────────────────────────────────────────────────────────────────
+ npm run retro:emulator:logs
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Nitro client + supporting servers
+═══════════════════════════════════════════════════════════════════════════════
+
+ Main client URL     : http://localhost:1080?sso=123
+ .nitro asset server : http://localhost:8080
+ Raw SWF server      : http://localhost:8081     (input for the converter)
+
+ ⚠️  Port 8081 conflicts with phpMyAdmin in .devcontainer. If both stacks
+ are up at the same time, stop one of them or remap.
+
+ ── Source layout (all submodules) ───────────────────────────────────────────
+ dev/retro/nitro/nitro-react       Nitro renderer + UI (commit pinned by Holo5)
+ dev/retro/nitro/nitro-converter   SWF → .nitro bundle converter
+ dev/retro/nitro/nitro-assets      Default JSON/XML asset configs
+ dev/retro/nitro/nitro-swf         The bundled SWF pack (input to the converter)
+ dev/retro/nitro/configuration     Renderer config overrides (URLs, theme, …)
+
+ ── Convert SWFs to .nitro (one-time after first up) ─────────────────────────
+ npm run retro:assets:extract
+
+ The script does three things:
+   1. yarn build (compiles the TS converter)
+   2. node ./dist/Main.js (full pipeline — downloads SWFs from :8081, parses
+      figuredata/furnidata/productdata, produces ~10,124 .nitro bundles)
+   3. cp -rT into /app/nitro-assets/{bundled,gamedata}  (where the :8080
+      asset HTTP server actually serves from)
+ Total time: ~5-15 minutes on first run, ~232 MB output.
+
+ ── Logs ─────────────────────────────────────────────────────────────────────
+ npm run retro:nitro:logs
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Compose lifecycle (run from repo root)
+═══════════════════════════════════════════════════════════════════════════════
+
+ npm run retro:up           # start (use --build flag via retro:up:build for rebuild)
+ npm run retro:down         # stop, keep data
+ npm run retro:down:clean   # stop + WIPE every Retro volume
+ npm run retro:restart      # restart all
+ npm run retro:ps           # show service status
+ npm run retro:logs         # tail logs of every service
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Forwarded ports (host ↔ container)
+═══════════════════════════════════════════════════════════════════════════════
+
+  3000  — Arcturus game socket (Nitro WebSocket / Habbo client)
+  3001  — Arcturus secondary game port
+  2096  — Arcturus camera + RCON webserver
+  1080  — Nitro client (open this in your browser)
+  8080  — Nitro .nitro asset server
+  8081  — Nitro raw-SWF server  (⚠ conflicts with .devcontainer phpMyAdmin)
+ (MariaDB is shared with .devcontainer — reachable on localhost:3306)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+ Common gotchas
+═══════════════════════════════════════════════════════════════════════════════
+
+ • "Loading hangs at 20%"      → run `npm run retro:assets:extract`.
+ • "Loading hangs at 80%"      → known schema-drift bug on this exact pin
+                                 (nitro-renderer 1.6.6 vs converter output).
+                                 Same issue your remote install hit; not yet
+                                 solved upstream. See project memory.
+ • Port 8081 conflict          → with .devcontainer phpMyAdmin. Stop one stack
+                                 or remap the holo5 port (and Nitro config).
+ • "MariaDB unhealthy"         → first boot needs ~30s to import the SQL dumps;
+                                 give it a moment and `npm run retro:ps` again.
+ • Container rebuilds on every `retro:up`?
+                                 → that's by design — Holo5's entrypoint runs
+                                 `mvn package` and `yarn` on every start so you
+                                 always get fresh builds after source edits.
+                                 Use `retro:recompile` instead for hot rebuilds.

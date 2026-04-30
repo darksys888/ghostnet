@@ -1,0 +1,28 @@
+{
+  "name": "@ghostnet/cdn",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Ultra-secure static file CDN serving the workspace public/ folder. Drop-in replacement for production CDNs (Cloudflare R2, S3+CloudFront, BunnyCDN) via the rclone-based push pipeline.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.app.json",
+    "serve": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+  },
+  "dependencies": {
+    "@fastify/compress": "^8.0.0",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/etag": "^6.0.0",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@fastify/static": "^8.0.0",
+    "dotenv": "^17.0.0",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0"
+  }
+}

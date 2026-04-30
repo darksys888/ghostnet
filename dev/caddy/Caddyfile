@@ -1,0 +1,100 @@
+# GHOSTNET — local-dev reverse proxy.
+#
+# Run with:
+#   caddy run --config dev/caddy/Caddyfile
+#   (or `npm run caddy:start`)
+#
+# Bring up everything Caddy fronts BEFORE starting it:
+#   npm run dev:up      # .devcontainer (mariadb, postgres, mailpit, minio, pgadmin, phpmyadmin)
+#   npm run retro:up    # Holo5 Retro stack (nitro, arcturus, asset/swf servers)
+#   npm run cdn:dev     # public/ CDN
+#
+# All sites use plain HTTP for friction-free dev (no cert prompts). To opt
+# into HTTPS-with-local-CA, comment out `auto_https off` and run
+# `caddy trust` once.
+
+{
+	# Disable auto-HTTPS — saves a `caddy trust` step. Comment out for
+	# local-CA TLS via Caddy's built-in certificate authority.
+	auto_https off
+
+	# Bind admin API to loopback only (default; explicit for clarity).
+	admin localhost:2019
+}
+
+# ───────────────────────────────────────────────────────────────────────
+# Public CDN — services/cdn (Fastify, port 5500).
+# Strict security headers come from the CDN itself; Caddy just routes.
+# ───────────────────────────────────────────────────────────────────────
+http://cdn.ghostnetw.test {
+	reverse_proxy localhost:5500
+}
+
+# ───────────────────────────────────────────────────────────────────────
+# Retro stack (dev/retro/, Holo5).
+# ───────────────────────────────────────────────────────────────────────
+
+# Nitro HTML5 client.
+http://retro.ghostnetw.test {
+	reverse_proxy localhost:1080
+}
+
+# .nitro asset bundles + gamedata.
+http://assets.ghostnetw.test {
+	reverse_proxy localhost:8080
+}
+
+# Raw SWF server (input for the converter).
+http://swf.ghostnetw.test {
+	reverse_proxy localhost:8081
+}
+
+# Arcturus emulator — NitroWebSockets endpoint.
+# Caddy auto-handles the WebSocket Upgrade dance with no extra config.
+http://arcturus.ghostnetw.test {
+	reverse_proxy localhost:2096
+}
+
+# ───────────────────────────────────────────────────────────────────────
+# .devcontainer web GUIs.
+# ───────────────────────────────────────────────────────────────────────
+
+# phpMyAdmin (browses both retro + arcturus DBs).
+http://db.ghostnetw.test {
+	reverse_proxy localhost:8083
+}
+
+# pgAdmin 4.
+http://pgadmin.ghostnetw.test {
+	reverse_proxy localhost:8082
+}
+
+# Mailpit web inbox.
+http://mail.ghostnetw.test {
+	reverse_proxy localhost:8025
+}
+
+# MinIO console UI.
+http://s3-console.ghostnetw.test {
+	reverse_proxy localhost:9001
+}
+
+# MinIO S3 API (use this from app code as the S3 endpoint).
+http://s3.ghostnetw.test {
+	reverse_proxy localhost:9000
+}
+
+# ───────────────────────────────────────────────────────────────────────
+# Production reference (commented — uncomment + adapt when shipping).
+# Caddy auto-issues real TLS via Let's Encrypt for any public domain.
+# ───────────────────────────────────────────────────────────────────────
+
+# cdn.ghostnetw.com {
+#     encode zstd gzip
+#     reverse_proxy localhost:5500
+# }
+#
+# retro.ghostnetw.com {
+#     encode zstd gzip
+#     reverse_proxy localhost:1080
+# }
