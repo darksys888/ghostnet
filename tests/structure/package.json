@@ -1,0 +1,15 @@
+{
+  "name": "@ghostnet/tests-structure",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cypress suite enforcing repo-structure invariants — AGENTS.md / CHANGELOG.md / AUDIT.md / CODEOWNERS must keep their hard-rule shape.",
+  "scripts": {
+    "test:e2e": "cypress run",
+    "test:e2e:open": "cypress open",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "cypress": "^14.0.0"
+  }
+}

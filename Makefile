@@ -7,6 +7,7 @@
         lint lint-fix format format-check e2e e2e-open \
         e2e-retro e2e-retro-open e2e-devcontainer e2e-devcontainer-open \
         e2e-cdn e2e-cdn-open e2e-hostnames e2e-hostnames-open \
+        e2e-structure e2e-structure-open \
         cdn-dev cdn-start cdn-build cdn-push cdn-push-dry cdn-push-check \
         hosts-install hosts-remove hosts-status \
         caddy-start caddy-reload caddy-fmt caddy-validate \
@@ -65,6 +66,8 @@ help:
 	@echo "    make e2e-cdn-open            - open the CDN Cypress UI"
 	@echo "    make e2e-hostnames           - run the hosts file + Caddy routing suite"
 	@echo "    make e2e-hostnames-open      - open the hostnames Cypress UI"
+	@echo "    make e2e-structure           - validate AGENTS / CHANGELOG / AUDIT / CODEOWNERS invariants"
+	@echo "    make e2e-structure-open      - open the structure Cypress UI"
 	@echo ""
 	@echo "  Hosts file + Caddy reverse proxy"
 	@echo "    make hosts-install           - inject *.ghostnetw.test into the system hosts file"
@@ -232,6 +235,14 @@ e2e-hostnames:
 
 e2e-hostnames-open:
 	npm run e2e:hostnames:open
+
+# Repo-structure invariant suite (AGENTS.md / CHANGELOG / AUDIT / CODEOWNERS).
+# Runs without any backend — always fast.
+e2e-structure:
+	npm run e2e:structure
+
+e2e-structure-open:
+	npm run e2e:structure:open
 
 # ── Public CDN (services/cdn/) ──────────────────────────────────
 # Watch-mode dev server (Fastify via tsx), serves repo public/.

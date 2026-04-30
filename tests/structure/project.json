@@ -1,0 +1,30 @@
+{
+  "name": "tests-structure",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "tests/structure",
+  "projectType": "application",
+  "tags": ["scope:tests", "type:e2e", "target:structure"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/structure",
+        "command": "cypress run"
+      }
+    },
+    "e2e:open": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/structure",
+        "command": "cypress open"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tests/structure",
+        "command": "tsc --noEmit"
+      }
+    }
+  }
+}

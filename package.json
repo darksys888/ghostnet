@@ -90,6 +90,8 @@
     "cdn:push:check": "bash scripts/cdn-push.sh --check",
     "e2e:cdn": "nx run tests-cdn:e2e",
     "e2e:cdn:open": "nx run tests-cdn:e2e:open",
+    "e2e:structure": "nx run tests-structure:e2e",
+    "e2e:structure:open": "nx run tests-structure:e2e:open",
     "graph": "nx graph",
     "affected": "nx affected --targets=lint,typecheck,test",
     "affected:lint": "nx affected --target=lint",
