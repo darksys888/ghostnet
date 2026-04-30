@@ -5,7 +5,7 @@
 #   - non-root `node` user with sudo
 # We only add the CLI clients useful for talking to sibling services.
 
-FROM mcr.microsoft.com/devcontainers/typescript-node:22-bookworm
+FROM mcr.microsoft.com/devcontainers/typescript-node:24-bookworm
 
 # Switch to root so apt-get can install system packages.
 USER root
