@@ -16,7 +16,7 @@
 # workspace that lives under apps/, libs/, packages/, services/, etc.
 
 # ─── Stage 1: base (deps cached) ─────────────────────────────────
-FROM node:22-alpine AS base
+FROM node:25-alpine AS base
 WORKDIR /workspace
 
 # `libc6-compat` covers the few Node native modules that need glibc
@@ -56,7 +56,7 @@ RUN npm run build
 # Pass TARGET=path/to/package (e.g. TARGET=apps/web) at build time. The
 # runtime image only contains node_modules + the built dist for that
 # single package, with `tini` as PID 1.
-FROM node:22-alpine AS runtime
+FROM node:25-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 
