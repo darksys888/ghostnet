@@ -2,7 +2,7 @@
 # Produces an nginx image serving the Vite-built static bundle.
 
 # ── Stage 1: Build the static bundle ─────────────────────────────
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /build
 
 # Install deps first for layer caching.
