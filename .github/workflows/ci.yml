@@ -91,7 +91,7 @@ jobs:
         run: npm ci
 
       - name: Run Cypress (tests/structure)
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         with:
           working-directory: tests/structure
           install: false
@@ -121,7 +121,7 @@ jobs:
         run: npx nx run cdn:build
 
       - name: Cypress run with the CDN started in the background
-        uses: cypress-io/github-action@v6
+        uses: cypress-io/github-action@v7
         env:
           CDN_PUBLIC_DIR: ${{ github.workspace }}/public
           CDN_LOG_LEVEL: warn
