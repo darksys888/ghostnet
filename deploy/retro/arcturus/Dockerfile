@@ -23,7 +23,7 @@ RUN wget --user-agent="Mozilla/5.0 (X11; Linux x86_64)" -q \
   || echo "WARN: NitroWebsockets-3.1.jar download failed — emulator will start without it."
 
 # ── Stage 3: Slim runtime ────────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 RUN apk add --no-cache bash netcat-openbsd gettext
 WORKDIR /app
 RUN mkdir -p plugins logs camera
